@@ -9,6 +9,10 @@ import {
   FileText,
   CreditCard,
   BarChart2,
+  PieChart,
+  Clock,
+  BookOpen,
+  Users,
 } from 'lucide-react';
 
 export type NavItem = {
@@ -85,5 +89,27 @@ export const SIDENAV_ITEMS: NavItem[] = [
     title: 'Reports',
     path: '/reports',
     icon: React.createElement(BarChart2, { size: 20 }),
+    submenu: [
+        {
+            title: 'Analisis Pengeluaran',
+            path: '/reports/spend-analysis',
+            icon: React.createElement(PieChart, { size: 18 }),
+        },
+        {
+            title: 'Umur Utang (AP Aging)',
+            path: '/reports/ap-aging',
+            icon: React.createElement(Clock, { size: 18 }),
+        },
+        {
+            title: 'Open PO',
+            path: '/reports/open-pos',
+            icon: React.createElement(BookOpen, { size: 18 }),
+        },
+        {
+            title: 'Kinerja Vendor',
+            path: '/reports/vendor-performance',
+            icon: React.createElement(Users, { size: 18 }),
+        },
+    ]
   },
 ];

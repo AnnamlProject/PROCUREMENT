@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../client';
-import type { Uom, Tax, CostCenter, Project, Currency } from '../types/purchasing';
+import type { Uom, Tax, CostCenter, Project, Currency, Withholding } from '../types/purchasing';
 
 // --- Query Keys ---
 export const lookupKeys = {
@@ -10,6 +10,7 @@ export const lookupKeys = {
   costCenters: () => [...lookupKeys.all, 'costCenters'] as const,
   projects: () => [...lookupKeys.all, 'projects'] as const,
   currencies: () => [...lookupKeys.all, 'currencies'] as const,
+  withholdings: () => [...lookupKeys.all, 'withholdings'] as const,
 };
 
 // --- API Functions ---
@@ -20,6 +21,7 @@ const fetchLookups = async () => {
     costCenters: CostCenter[];
     projects: Project[];
     currencies: Currency[];
+    withholdings: Withholding[];
   }>('/lookups');
   return data;
 };

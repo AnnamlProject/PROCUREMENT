@@ -56,3 +56,23 @@ export const checkTolerance = (
     lowerBound,
   };
 };
+
+/**
+ * Calculates the tax amount from a base amount and rate.
+ * @param baseAmount The amount to calculate tax from.
+ * @param taxRate The tax rate (e.g., 0.11 for 11%).
+ * @returns The calculated tax amount.
+ */
+export const calculateTax = (baseAmount: number, taxRate: number): number => {
+  return baseAmount * taxRate;
+};
+
+/**
+ * Calculates the withholding tax amount from a base amount and rate.
+ * @param baseAmount The amount to calculate withholding from.
+ * @param withholdingRate The withholding rate (e.g., 0.02 for 2%).
+ * @returns The calculated withholding tax amount.
+ */
+export const calculateWithholding = (baseAmount: number, withholdingRate: number): number => {
+  return baseAmount * withholdingRate;
+};

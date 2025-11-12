@@ -109,7 +109,7 @@ export default function GRNPostPage() {
             <CardContent className="text-center space-y-6">
                 <p>Penerimaan barang telah berhasil dicatat. Anda dapat melihat detail pencocokan atau membuat GRN baru.</p>
                 <div className="flex justify-center gap-4">
-                    <Button variant="outline" disabled>
+                    <Button variant="outline" onClick={() => navigate(`/purchasing/po/view/${postedGRN.poId}?tab=matching`)}>
                         <Receipt className="mr-2 h-4 w-4" />
                         Lihat Match
                     </Button>

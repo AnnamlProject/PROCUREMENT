@@ -10,12 +10,18 @@ export const grnKeys = {
   list: (filters: Record<string, any>) => [...grnKeys.lists(), filters] as const,
   details: () => [...grnKeys.all, 'detail'] as const,
   detail: (id: string) => [...grnKeys.details(), id] as const,
+  byPO: (poId: string) => [...grnKeys.all, 'byPO', poId] as const,
 };
 
 // --- API Functions ---
 const fetchGRNs = async (filters: Record<string, any>): Promise<PaginatedResponse<GoodsReceipt>> => {
   const { data } = await api.get('/grn', { params: filters });
   return data;
+};
+
+const fetchGRNsByPO = async (poId: string): Promise<GoodsReceipt[]> => {
+    const { data } = await api.get('/grn', { params: { poId } });
+    return data;
 };
 
 const postGRN = async (grnData: Partial<GoodsReceipt>): Promise<GoodsReceipt> => {
@@ -29,6 +35,14 @@ export const useGetGRNs = (filters: Record<string, any>) => {
     queryKey: grnKeys.list(filters),
     queryFn: () => fetchGRNs(filters),
   });
+};
+
+export const useGetGRNsByPO = (poId: string) => {
+    return useQuery({
+        queryKey: grnKeys.byPO(poId),
+        queryFn: () => fetchGRNsByPO(poId),
+        enabled: !!poId,
+    });
 };
 
 export const usePostGRN = () => {

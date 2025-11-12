@@ -312,6 +312,12 @@ export const handlers = [
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
     const perPage = parseInt(url.searchParams.get('perPage') || '10');
+    const poId = url.searchParams.get('poId');
+
+    if (poId) {
+        const data = db.grns.filter(g => g.poId === poId);
+        return HttpResponse.json(data);
+    }
     
     const start = (page - 1) * perPage;
     const end = start + perPage;
@@ -401,5 +407,18 @@ export const handlers = [
 
     db.ses.unshift(newSes);
     return HttpResponse.json(newSes, { status: 201 });
+  }),
+
+   // --- Invoice Handlers ---
+  http.get(`${API_BASE_URL}/invoices`, async ({ request }) => {
+    await delay(450);
+    const url = new URL(request.url);
+    const poId = url.searchParams.get('poId');
+    if (poId) {
+        const data = db.invoices.filter(i => i.poId === poId);
+        return HttpResponse.json(data);
+    }
+    // TODO: Add paginated response for general invoice list
+    return HttpResponse.json({ data: db.invoices });
   }),
 ];

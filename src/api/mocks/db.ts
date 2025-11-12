@@ -1,5 +1,5 @@
 import { DocStatus } from '../types/core';
-import type { CostCenter, Item, PO, PR, Project, Uom, Vendor, Tax, Currency, RFQ, RFQBid, GoodsReceipt, ServiceEntry } from '../types/purchasing';
+import type { CostCenter, Item, PO, PR, Project, Uom, Vendor, Tax, Currency, RFQ, RFQBid, GoodsReceipt, ServiceEntry, Invoice } from '../types/purchasing';
 
 // --- Master Data ---
 export const uoms: Uom[] = [
@@ -178,5 +178,49 @@ export const pos: PO[] = [
     }
 ];
 
-export const grns: GoodsReceipt[] = [];
+export const grns: GoodsReceipt[] = [
+    {
+        id: 'grn-1',
+        docNo: 'GRN-2024-00001',
+        docDate: new Date().toISOString(),
+        status: DocStatus.POSTED,
+        poId: 'po-1',
+        po: pos[0],
+        deliveryOrderNo: 'DO-VENDOR-123',
+        lines: [
+            // Mouse: ordered 5, received 5
+            { id: 'grnl-1-1', poLineId: 'pol-1-1', receivedQty: 5, qcResult: 'PASS' },
+            // Kertas: ordered 10, received 8 (under-delivery but within 20% tolerance)
+            { id: 'grnl-1-2', poLineId: 'pol-1-2', receivedQty: 8, qcResult: 'PASS' }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    }
+];
 export const ses: ServiceEntry[] = [];
+export const invoices: Invoice[] = [
+    {
+        id: 'inv-1',
+        docNo: 'INV/2024/ATK/001',
+        vendorId: 'vendor-2',
+        vendor: vendors[1],
+        poId: 'po-1',
+        po: pos[0],
+        vendorInvoiceNo: 'ATK-S/24/05/103',
+        docDate: new Date().toISOString(),
+        status: DocStatus.SUBMITTED,
+        lines: [
+            // Mouse: received 5, invoiced 5, price slightly higher
+            { id: 'invl-1-1', poLineId: 'pol-1-1', grnLineId: 'grnl-1-1', description: 'Mouse untuk tim developer', quantity: 5, price: 246000, total: 1230000 },
+            // Kertas: received 8, invoiced 8, price same
+            { id: 'invl-1-2', poLineId: 'pol-1-2', grnLineId: 'grnl-1-2', description: 'Kertas untuk printer kantor', quantity: 8, price: 48000, total: 384000 },
+        ],
+        subtotal: 1614000,
+        taxes: [{ taxId: 'tax-1', tax: taxes[0], baseAmount: 1614000, taxAmount: 177540 }],
+        grandTotal: 1791540,
+        dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        paymentStatus: 'UNPAID',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    }
+];

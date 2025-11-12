@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,8 +13,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      // FIX: Replaced `__dirname` with `import.meta.url` to get the current directory path in an ES module environment, which resolves the "Cannot find name '__dirname'" error.
-      '@': path.resolve(new URL(import.meta.url).pathname, '..', 'src'),
+      // FIX: Using fileURLToPath for robust, cross-platform path resolution in an ES module environment. This resolves issues with path aliases, particularly on Windows, which can cause a blank screen on startup.
+      '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src'),
     },
   },
 })

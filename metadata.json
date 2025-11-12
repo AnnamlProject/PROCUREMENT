@@ -1,0 +1,5 @@
+{
+  "name": "ERP Procurement Admin UI",
+  "description": "A comprehensive Admin UI for an ERP Procurement system, built with React, TypeScript, and Tailwind CSS. It covers the end-to-end procurement lifecycle from Purchase Requisition to Payment.",
+  "requestFramePermissions": []
+}

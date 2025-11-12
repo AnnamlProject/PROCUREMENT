@@ -1,46 +1,52 @@
-
-import React, { createContext, useContext, useMemo } from 'react';
-
-interface User {
-  name: string;
-  roles: string[];
-  permissions: string[];
-}
+import { PERMISSIONS, USER_PROFILES, UserProfile } from '@/lib/permissions';
+import React, { createContext, useContext, useMemo, useState, useEffect, useCallback } from 'react';
 
 interface AuthContextType {
-  user: User | null;
+  user: UserProfile | null;
+  login: (role: keyof typeof USER_PROFILES) => void;
+  logout: () => void;
   hasPermission: (permission: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Dummy user data for demonstration
-const dummyUser: User = {
-  name: 'Admin Pengadaan',
-  roles: ['Admin', 'Approver'],
-  permissions: [
-    'pr.create',
-    'pr.read',
-    'pr.update',
-    'pr.approve',
-    'rfq.create',
-    'rfq.read',
-    'po.create',
-    'po.read',
-    'po.view', // for guard demonstration
-  ],
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const user = dummyUser;
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    try {
+      const storedUser = localStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse user from localStorage", error);
+      return null;
+    }
+  });
 
-  const hasPermission = (permission: string): boolean => {
-    return user?.permissions.includes(permission) ?? false;
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.removeItem('user');
+    }
+  }, [user]);
+
+  const login = (role: keyof typeof USER_PROFILES) => {
+    const userProfile = USER_PROFILES[role];
+    if (userProfile) {
+      setUser(userProfile);
+    }
   };
 
-  const value = useMemo(() => ({ user, hasPermission }), [user]);
+  const logout = () => {
+    setUser(null);
+  };
+
+  const hasPermission = useCallback((permission: string): boolean => {
+    return user?.permissions.includes(permission) ?? false;
+  }, [user]);
+
+  const value = useMemo(() => ({ user, login, logout, hasPermission }), [user, hasPermission]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

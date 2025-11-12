@@ -6,8 +6,11 @@ import { InvoicesListPage } from '@/pages/InvoicesListPage';
 import { PaymentsListPage } from '@/pages/PaymentsListPage';
 import { POListPage } from '@/pages/POListPage';
 import { PRListPage } from '@/pages/PRListPage';
+import PREditPage from '@/pages/pr/PREditPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { RFQListPage } from '@/pages/RFQListPage';
+import BidTabulationPage from '@/pages/rfq/BidTabulationPage';
+import RFQWizardPage from '@/pages/rfq/RFQWizardPage';
 import { SESListPage } from '@/pages/SESListPage';
 import { Route, Routes } from 'react-router-dom';
 
@@ -17,7 +20,11 @@ export const AppRoutes = () => {
       <Route path="/" element={<AppShell />}>
         <Route index element={<DashboardPage />} />
         <Route path="purchasing/pr" element={<PRListPage />} />
+        <Route path="purchasing/pr/new" element={<PREditPage />} />
+        <Route path="purchasing/pr/edit/:id" element={<PREditPage />} />
         <Route path="purchasing/rfq" element={<RFQListPage />} />
+        <Route path="purchasing/rfq/new" element={<RFQWizardPage />} />
+        <Route path="purchasing/rfq/:id/bid-tabulation" element={<BidTabulationPage />} />
         <Route path="purchasing/po" element={<POListPage />} />
         <Route path="receiving/grn" element={<GRNListPage />} />
         <Route path="services/ses" element={<SESListPage />} />

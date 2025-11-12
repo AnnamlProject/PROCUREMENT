@@ -3,6 +3,7 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import { Topbar } from '@/components/layout/Topbar';
 import { Outlet } from 'react-router-dom';
 import { useState } from 'react';
+import { Toaster } from '../ui/toaster';
 
 export const AppShell = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -16,6 +17,7 @@ export const AppShell = () => {
           <Outlet />
         </main>
       </div>
+      <Toaster />
     </div>
   );
 };

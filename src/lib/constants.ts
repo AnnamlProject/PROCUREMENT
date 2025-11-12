@@ -1,5 +1,4 @@
-
-// FIX: Import React to make the JSX namespace available.
+// FIX: Import React to use React.createElement.
 import React from 'react';
 import {
   LayoutDashboard,
@@ -15,7 +14,8 @@ import {
 export type NavItem = {
   title: string;
   path: string;
-  icon: JSX.Element;
+  // FIX: Changed JSX.Element to React.ReactElement to be compatible with .ts files.
+  icon: React.ReactElement;
   submenu?: NavItem[];
 };
 
@@ -23,67 +23,67 @@ export const SIDENAV_ITEMS: NavItem[] = [
   {
     title: 'Dashboard',
     path: '/',
-    icon: <LayoutDashboard size={20} />,
+    icon: React.createElement(LayoutDashboard, { size: 20 }),
   },
   {
     title: 'Purchasing',
-    path: '/purchasing', // FIX: Added missing comma
-    icon: <ShoppingCart size={20} />,
+    path: '/purchasing',
+    icon: React.createElement(ShoppingCart, { size: 20 }),
     submenu: [
       {
         title: 'Purchase Requisition (PR)',
-        path: '/purchasing/pr', // FIX: Added missing comma
-        icon: <FileText size={18} />,
+        path: '/purchasing/pr',
+        icon: React.createElement(FileText, { size: 18 }),
       },
       {
         title: 'Request for Quotation (RFQ)',
-        path: '/purchasing/rfq', // FIX: Added missing comma
-        icon: <FileText size={18} />,
+        path: '/purchasing/rfq',
+        icon: React.createElement(FileText, { size: 18 }),
       },
       {
         title: 'Purchase Order (PO)',
         path: '/purchasing/po',
-        icon: <FileText size={18} />,
+        icon: React.createElement(FileText, { size: 18 }),
       },
     ],
   },
   {
     title: 'Receiving',
-    path: '/receiving', // FIX: Added missing comma
-    icon: <Truck size={20} />,
+    path: '/receiving',
+    icon: React.createElement(Truck, { size: 20 }),
     submenu: [
       {
         title: 'Goods Receipt Note (GRN)',
         path: '/receiving/grn',
-        icon: <FileText size={18} />,
+        icon: React.createElement(FileText, { size: 18 }),
       },
     ],
   },
   {
     title: 'Services',
-    path: '/services', // FIX: Added missing comma
-    icon: <Wrench size={20} />,
+    path: '/services',
+    icon: React.createElement(Wrench, { size: 20 }),
     submenu: [
       {
         title: 'Service Entry Sheet (SES)',
         path: '/services/ses',
-        icon: <FileText size={18} />,
+        icon: React.createElement(FileText, { size: 18 }),
       },
     ],
   },
   {
     title: 'Invoices',
     path: '/invoices',
-    icon: <Receipt size={20} />,
+    icon: React.createElement(Receipt, { size: 20 }),
   },
   {
     title: 'Payments',
     path: '/payments',
-    icon: <CreditCard size={20} />,
+    icon: React.createElement(CreditCard, { size: 20 }),
   },
   {
     title: 'Reports',
     path: '/reports',
-    icon: <BarChart2 size={20} />,
+    icon: React.createElement(BarChart2, { size: 20 }),
   },
 ];

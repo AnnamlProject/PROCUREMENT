@@ -1,9 +1,7 @@
-
-
 import { http, HttpResponse, delay } from 'msw';
 import * as db from './db';
 import { DocStatus } from '../types/core';
-import { PR, RFQ } from '../types/purchasing';
+import { GoodsReceipt, PO, PR, RFQ, ServiceEntry } from '../types/purchasing';
 
 const API_BASE_URL = '/api';
 
@@ -171,6 +169,14 @@ export const handlers = [
     });
   }),
   
+  http.get(`${API_BASE_URL}/rfq/:id`, async ({ params }) => {
+    await delay(300);
+    const { id } = params;
+    const rfq = db.rfqs.find(r => r.id === id);
+    if (!rfq) return new HttpResponse(null, { status: 404 });
+    return HttpResponse.json(rfq);
+  }),
+
   http.get(`${API_BASE_URL}/rfq/:id/bids`, async ({ params }) => {
     await delay(600);
     const { id } = params;
@@ -202,9 +208,10 @@ export const handlers = [
     return HttpResponse.json(newRfq, { status: 201 });
   }),
 
-  http.post(`${API_BASE_URL}/rfq/:id/award`, async ({ params }) => {
+  http.post(`${API_BASE_URL}/rfq/:id/award`, async ({ params, request }) => {
     await delay(1000);
     const { id } = params;
+    const { awards } = await request.json() as { awards: any[] };
     const rfqIndex = db.rfqs.findIndex(r => r.id === id);
 
     if (rfqIndex === -1) {
@@ -212,9 +219,187 @@ export const handlers = [
     }
 
     db.rfqs[rfqIndex].status = DocStatus.CLOSED;
+    db.rfqs[rfqIndex].awardedVendors = awards;
     db.rfqs[rfqIndex].updatedAt = new Date().toISOString();
 
     return HttpResponse.json({ message: "Award berhasil disimpan. Siap untuk membuat PO." });
   }),
 
+  // --- PO Handlers ---
+  http.get(`${API_BASE_URL}/po`, async ({ request }) => {
+    await delay(500);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('perPage') || '10');
+    const status = url.searchParams.get('status');
+    const poType = url.searchParams.get('poType');
+
+    let allPOs = [...db.pos];
+
+    if (status) {
+      allPOs = allPOs.filter(po => po.status === status);
+    }
+     if (poType) {
+      allPOs = allPOs.filter(po => po.poType === poType);
+    }
+    
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    
+    let filteredData = allPOs.sort((a,b) => new Date(b.docDate!).getTime() - new Date(a.docDate!).getTime());
+    
+    const paginatedData = filteredData.slice(start, end);
+
+    return HttpResponse.json({
+        data: paginatedData,
+        meta: {
+            currentPage: page,
+            perPage,
+            totalPages: Math.ceil(filteredData.length / perPage),
+            total: filteredData.length,
+        }
+    });
+  }),
+
+  http.get(`${API_BASE_URL}/po/:id`, async ({ params }) => {
+    await delay(300);
+    const { id } = params;
+    const po = db.pos.find(p => p.id === id);
+    if (!po) return new HttpResponse(null, { status: 404 });
+    return HttpResponse.json(po);
+  }),
+  
+  http.post(`${API_BASE_URL}/po`, async ({ request }) => {
+    await delay(700);
+    const newPOData = await request.json() as Partial<PO>;
+    
+    const newPO: PO = {
+        id: `po-${Date.now()}`,
+        docNo: `PO-2024-${String(db.pos.length + 1).padStart(5, '0')}`,
+        status: DocStatus.APPROVED, // POs are created as Approved, waiting for Release
+        docDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...newPOData,
+    } as PO;
+
+    db.pos.unshift(newPO);
+    return HttpResponse.json(newPO, { status: 201 });
+  }),
+
+  http.post(`${API_BASE_URL}/po/:id/release`, async ({ params }) => {
+    await delay(800);
+    const { id } = params;
+    const poIndex = db.pos.findIndex(p => p.id === id);
+
+    if (poIndex === -1) {
+        return new HttpResponse(null, { status: 404 });
+    }
+
+    if (db.pos[poIndex].status !== DocStatus.APPROVED) {
+         return HttpResponse.json({ message: 'Hanya PO status APPROVED yang bisa di-release.' }, { status: 400 });
+    }
+    
+    db.pos[poIndex].status = DocStatus.RELEASED;
+    db.pos[poIndex].updatedAt = new Date().toISOString();
+
+    return HttpResponse.json(db.pos[poIndex]);
+  }),
+
+  // --- GRN Handlers ---
+  http.get(`${API_BASE_URL}/grn`, async ({ request }) => {
+    await delay(500);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('perPage') || '10');
+    
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    
+    let filteredData = [...db.grns].sort((a,b) => new Date(b.docDate!).getTime() - new Date(a.docDate!).getTime());
+    
+    const paginatedData = filteredData.slice(start, end);
+
+    return HttpResponse.json({
+        data: paginatedData,
+        meta: {
+            currentPage: page,
+            perPage,
+            totalPages: Math.ceil(db.grns.length / perPage),
+            total: db.grns.length,
+        }
+    });
+  }),
+
+  http.post(`${API_BASE_URL}/grn`, async ({ request }) => {
+    await delay(700);
+    const newGrnData = await request.json() as Partial<GoodsReceipt>;
+    
+    const newGrn: GoodsReceipt = {
+        id: `grn-${Date.now()}`,
+        docNo: `GRN-2024-${String(db.grns.length + 1).padStart(5, '0')}`,
+        status: DocStatus.POSTED,
+        docDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...newGrnData,
+    } as GoodsReceipt;
+
+    db.grns.unshift(newGrn);
+    return HttpResponse.json(newGrn, { status: 201 });
+  }),
+
+  // --- SES Handlers ---
+  http.get(`${API_BASE_URL}/ses`, async ({ request }) => {
+    await delay(500);
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const perPage = parseInt(url.searchParams.get('perPage') || '10');
+    
+    const start = (page - 1) * perPage;
+    const end = start + perPage;
+    
+    let filteredData = [...db.ses].sort((a,b) => new Date(b.docDate!).getTime() - new Date(a.docDate!).getTime());
+    
+    const paginatedData = filteredData.slice(start, end);
+
+    return HttpResponse.json({
+        data: paginatedData,
+        meta: {
+            currentPage: page,
+            perPage,
+            totalPages: Math.ceil(db.ses.length / perPage),
+            total: db.ses.length,
+        }
+    });
+  }),
+  
+  http.post(`${API_BASE_URL}/ses`, async ({ request }) => {
+    await delay(700);
+    const newSesData = await request.json() as Partial<ServiceEntry> & { poId: string, lines: any[] };
+    
+    const po = db.pos.find(p => p.id === newSesData.poId);
+    if (!po) {
+        return HttpResponse.json({ message: 'PO tidak ditemukan' }, { status: 404 });
+    }
+
+    const totalAmount = newSesData.lines.reduce((acc, line) => acc + line.claimedAmount, 0);
+    const retentionAmount = totalAmount * (newSesData.retentionPercentage! / 100);
+
+    const newSes: ServiceEntry = {
+        id: `ses-${Date.now()}`,
+        docNo: `SES-2024-${String(db.ses.length + 1).padStart(5, '0')}`,
+        status: DocStatus.ACCEPTED,
+        docDate: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        po,
+        ...newSesData,
+        totalAmount,
+        retentionAmount,
+    } as ServiceEntry;
+
+    db.ses.unshift(newSes);
+    return HttpResponse.json(newSes, { status: 201 });
+  }),
 ];

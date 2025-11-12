@@ -23,12 +23,11 @@ const badgeVariants = cva(
   }
 )
 
-export interface BadgeProps
-  extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+// FIX: Changed interface to a type alias to correctly resolve the intersection with VariantProps.
+export type BadgeProps = React.HTMLAttributes<HTMLDivElement> &
+  VariantProps<typeof badgeVariants>
 
-// FIX: Rewrote the component as a React.FC to resolve typing errors with props.
-const Badge: React.FC<BadgeProps> = ({ className, variant, ...props }) => {
+function Badge({ className, variant, ...props }: BadgeProps) {
   return (
     <div className={cn(badgeVariants({ variant }), className)} {...props} />
   )

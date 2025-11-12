@@ -10,6 +10,7 @@ export const PERMISSIONS = {
   PO_CREATE: 'po.create',
   PO_READ: 'po.read',
   PO_RELEASE: 'po.release',
+  PO_CANCEL: 'po.cancel',
   GRN_CREATE: 'grn.create',
   GRN_POST: 'grn.post',
   SES_CREATE: 'ses.create',

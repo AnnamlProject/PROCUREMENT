@@ -1,4 +1,3 @@
-
 import type { BaseEntity, Money, DocStatus } from './core';
 
 // --- Master Data ---
@@ -101,6 +100,7 @@ export interface RFQ extends BaseEntity {
   lines: RFQLine[];
   invitedVendorIds: string[];
   invitedVendors?: Vendor[];
+  awardedVendors?: Award[];
 }
 
 export interface RFQBid {
@@ -125,10 +125,12 @@ export interface Award {
     rfqLineId: string;
     vendorId: string;
     awardedQty: number;
+    price: Money;
 }
 
 
 // Purchase Order
+export type POType = 'STANDARD' | 'BLANKET' | 'SERVICE';
 export interface POSchedule {
   id: string;
   deliveryDate: string;
@@ -138,10 +140,13 @@ export interface POSchedule {
 export interface POLine {
   id: string;
   prLineId?: string;
+  rfqLineId?: string;
   item?: Item;
+  itemId?: string;
   description: string;
   quantity: number;
   uom?: Uom;
+  uomId?: string;
   price: Money;
   total: Money;
   taxId?: string;
@@ -150,31 +155,37 @@ export interface POLine {
 }
 
 export interface PO extends BaseEntity {
+  poType: POType;
+  rfqId?: string;
   vendorId: string;
   vendor?: Vendor;
   currencyId: string;
   currency?: Currency;
+  paymentTerms: string; // e.g., "Net 30", "Cash on Delivery"
+  deliveryAddress: string;
+  tolerance?: number; // 0-100, for GRN over/under delivery
   lines: POLine[];
   subtotal: Money;
   taxAmount: Money;
   grandTotal: Money;
+  // For Blanket PO
+  valueLimit?: Money;
+  validityStartDate?: string;
+  validityEndDate?: string;
 }
 
 // Goods Receipt
-export interface QCResult {
-  id: string;
-  parameter: string;
-  result: 'PASS' | 'FAIL';
-  notes?: string;
-}
+export type QCResultStatus = 'PASS' | 'HOLD' | 'REJECT';
 export interface GRLine {
   id: string;
   poLineId: string;
   poLine?: POLine;
   receivedQty: number;
+  location?: string;
   batchNo?: string;
   serialNo?: string;
-  qcResults?: QCResult[];
+  qcResult: QCResultStatus;
+  notes?: string;
 }
 export interface GoodsReceipt extends BaseEntity {
   poId: string;
@@ -185,29 +196,13 @@ export interface GoodsReceipt extends BaseEntity {
 
 
 // Service Entry
-export interface Milestone {
-    id: string;
-    description: string;
-    percentage: number; // 0-100
-    dueDate: string;
-    status: 'PENDING' | 'COMPLETED' | 'VERIFIED';
-}
-export interface Timesheet {
-    id: string;
-    consultantName: string;
-    startDate: string;
-    endDate: string;
-    hoursWorked: number;
-}
 export interface SELine {
   id: string;
   poLineId: string;
   poLine?: POLine;
   description: string;
-  amount?: Money;
-  percentage?: number;
-  milestone?: Milestone;
-  timesheet?: Timesheet;
+  progressPercentage: number; // 0-100
+  claimedAmount: Money;
 }
 
 export interface ServiceEntry extends BaseEntity {
@@ -215,6 +210,8 @@ export interface ServiceEntry extends BaseEntity {
   po?: PO;
   lines: SELine[];
   totalAmount: Money;
+  retentionPercentage: number;
+  retentionAmount: Money;
 }
 
 // Invoice

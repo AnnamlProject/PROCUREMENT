@@ -1,6 +1,5 @@
-
 import { DocStatus } from '../types/core';
-import type { CostCenter, Item, PR, Project, Uom, Vendor, Tax, Currency, RFQ, RFQBid } from '../types/purchasing';
+import type { CostCenter, Item, PO, PR, Project, Uom, Vendor, Tax, Currency, RFQ, RFQBid, GoodsReceipt, ServiceEntry } from '../types/purchasing';
 
 // --- Master Data ---
 export const uoms: Uom[] = [
@@ -103,7 +102,7 @@ export const rfqs: RFQ[] = [
         id: 'rfq-1',
         docNo: 'RFQ-2024-00001',
         docDate: new Date().toISOString(),
-        status: DocStatus.SUBMITTED,
+        status: DocStatus.CLOSED,
         prIds: ['pr-1'],
         deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
         lines: [
@@ -114,6 +113,10 @@ export const rfqs: RFQ[] = [
         invitedVendors: vendors,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        awardedVendors: [
+            { rfqLineId: 'rfql-1-1', vendorId: 'vendor-2', awardedQty: 5, price: 245000 },
+            { rfqLineId: 'rfql-1-2', vendorId: 'vendor-3', awardedQty: 10, price: 48000 }
+        ]
     }
 ];
 
@@ -126,3 +129,54 @@ export const rfqBids: RFQBid[] = [
     { id: 'bid-1-2-2', rfqLineId: 'rfql-1-2', vendorId: 'vendor-1', vendorName: 'PT ATK Sejahtera', price: 49500, leadTimeDays: 4 },
     { id: 'bid-1-2-3', rfqLineId: 'rfql-1-2', vendorId: 'vendor-2', vendorName: 'CV Komputer Cepat', price: 51000, leadTimeDays: 3 },
 ];
+
+export const pos: PO[] = [
+    {
+        id: 'po-1',
+        docNo: 'PO-2024-00001',
+        docDate: new Date().toISOString(),
+        status: DocStatus.RELEASED,
+        poType: 'STANDARD',
+        rfqId: 'rfq-1',
+        vendorId: 'vendor-2', // Mixed vendors from award, simplified to one for the PO header
+        vendor: vendors[1],
+        currencyId: 'curr-1',
+        currency: currencies[0],
+        paymentTerms: 'Net 30',
+        deliveryAddress: 'Gudang Pusat, Jl. Raya Serpong Km 10',
+        tolerance: 10, // 10% tolerance
+        lines: [
+            { id: 'pol-1-1', rfqLineId: 'rfql-1-1', item: items[2], description: 'Mouse untuk tim developer', quantity: 5, uom: uoms[0], price: 245000, total: 1225000, taxId: 'tax-1', schedules: [] },
+            { id: 'pol-1-2', rfqLineId: 'rfql-1-2', item: items[0], description: 'Kertas untuk printer kantor', quantity: 10, uom: uoms[2], price: 48000, total: 480000, taxId: 'tax-1', schedules: [] }
+        ],
+        subtotal: 1705000,
+        taxAmount: 187550,
+        grandTotal: 1892550,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    },
+    {
+        id: 'po-2',
+        docNo: 'PO-2024-00002',
+        docDate: new Date().toISOString(),
+        status: DocStatus.RELEASED,
+        poType: 'SERVICE',
+        vendorId: 'vendor-1',
+        vendor: vendors[0],
+        currencyId: 'curr-1',
+        currency: currencies[0],
+        paymentTerms: 'Net 45',
+        deliveryAddress: 'Kantor Pusat, Jl. Sudirman Kav. 50',
+        lines: [
+            { id: 'pol-2-1', description: 'Jasa Konsultasi Implementasi Sistem', quantity: 1, price: 25000000, total: 25000000, taxId: 'tax-1', schedules: [] }
+        ],
+        subtotal: 25000000,
+        taxAmount: 2750000,
+        grandTotal: 27750000,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    }
+];
+
+export const grns: GoodsReceipt[] = [];
+export const ses: ServiceEntry[] = [];

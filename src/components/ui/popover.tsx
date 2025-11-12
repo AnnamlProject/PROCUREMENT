@@ -78,8 +78,8 @@ const PopoverTrigger = React.forwardRef<
   const child = React.Children.only(children) as React.ReactElement;
 
   if (asChild) {
-      // FIX: Corrected ref handling in cloneElement. The previous implementation incorrectly tried to access `child.ref`, which is not a valid prop and caused type errors.
-      return React.cloneElement(child, {
+      // FIX: Cast child to React.ReactElement<any> to allow 'ref' prop to be passed via cloneElement, resolving a TypeScript type inference issue.
+      return React.cloneElement(child as React.ReactElement<any>, {
         ref: (node: HTMLButtonElement) => {
             triggerRef.current = node;
             // Handle external ref passed to PopoverTrigger
